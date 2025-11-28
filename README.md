@@ -53,18 +53,7 @@ El servidor estará disponible en: `http://localhost:3001`
 
 ## 🧪 Verificación
 
-Probar que la API funciona correctamente:
-
-```bash
-# 1. Login con usuario de prueba
-curl -X POST http://localhost:3001/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"usuario@example.com","password":"password"}'
-
-# 2. Obtener favoritos (reemplaza TOKEN con el accessToken obtenido)
-curl -H "Authorization: Bearer TOKEN" \
-  http://localhost:3001/api/favorites
-```
+Para probar la API, abre en un navegador `http://localhost:3001/api-docs` y deberías ver los endpoints de Swagger. Una vez hecho esto, para ejecutar los diferentes endpoints, tan solo tendrías que iniciar sesión.
 
 ## 📋 API Endpoints
 
