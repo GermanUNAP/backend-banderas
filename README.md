@@ -29,6 +29,8 @@ npm install
 mysql -u root -p < database.sql
 ```
 
+**Alternativa recomendada:** Abre el archivo `database.sql` en MySQL Workbench, phpMyAdmin, o cualquier cliente MySQL, copia todo el contenido y ejecútalo directamente. Esto es más fácil y visual.
+
 **Usuario de prueba incluido:**
 - Email: `usuario@example.com`
 - Password: `password`
