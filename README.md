@@ -1,174 +1,163 @@
-# ¡Hola! Soy el desarrollador de esta API de países
+# Countries App - Backend API
 
-Te cuento lo que hice para crear esta API REST completa para autenticación de usuarios y gestión de países favoritos. Quise hacer algo funcional y fácil de usar desde el primer momento.
+API REST para autenticación de usuarios y gestión de países favoritos.
 
-## 🚀 Cómo Levantar el Proyecto (Paso a Paso)
+## 🚀 Instalación y Configuración
 
-### Lo que Necesitas
+### Prerrequisitos
 - Node.js (versión 14 o superior)
-- MySQL instalado en tu máquina
+- MySQL
 
-### Paso 1: Prepara el Proyecto
+### 1. Clonar Repositorios
 ```bash
-# Clona el repositorio y entra a la carpeta
-git clone <tu-repo-aqui>
-cd backend
+# Backend
+git clone https://github.com/GermanUNAP/backend-banderas.git
+cd backend-banderas
 
-# Instala todas las dependencias que usé
+# Frontend (opcional, en otra terminal)
+git clone https://github.com/GermanUNAP/frontend-banderas.git
+```
+
+### 2. Instalar Dependencias
+```bash
 npm install
 ```
 
-### Paso 2: Configura la Base de Datos
-Aquí viene lo más fácil - ejecuta este comando y ¡listo!:
+### 3. Configurar Base de Datos
 ```bash
-# Esto crea la base de datos, las tablas Y un usuario de ejemplo
+# Crear base de datos, tablas y usuario de ejemplo
 mysql -u root -p < database.sql
 ```
 
-**Importante**: Incluí un usuario de ejemplo para que puedas probar inmediatamente:
-- **Email**: `usuario@example.com`
-- **Contraseña**: `password`
+**Usuario de prueba incluido:**
+- Email: `usuario@example.com`
+- Password: `password`
 
-### Paso 3: Variables de Entorno
+### 4. Variables de Entorno
 ```bash
-# Copia el archivo de ejemplo que preparé
+# Copiar archivo de configuración
 cp .env.example .env
 
-# Si necesitas cambiar algo (como la contraseña de MySQL), edita el .env
-# Pero por defecto debería funcionar
+# El archivo .env ya contiene valores seguros por defecto
+# Solo modifica si necesitas cambiar credenciales de MySQL
 ```
 
-### Paso 4: ¡Listo para Usar!
+### 5. Iniciar Servidor
 ```bash
-# Inicia el servidor
 npm start
 ```
 
-El servidor estará corriendo en `http://localhost:3001` 🎉
+El servidor estará disponible en: `http://localhost:3001`
 
-## 🧪 Prueba que Todo Funciona
+## 🧪 Verificación
 
-Preparé unos comandos curl para que veas que todo funciona desde el primer momento:
+Probar que la API funciona correctamente:
 
 ```bash
-# 1. Haz login con el usuario de ejemplo que incluí
+# 1. Login con usuario de prueba
 curl -X POST http://localhost:3001/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"usuario@example.com","password":"password"}'
 
-# 2. Copia el "accessToken" de la respuesta y úsalo así:
-curl -H "Authorization: Bearer TU_ACCESS_TOKEN_AQUI" \
+# 2. Obtener favoritos (reemplaza TOKEN con el accessToken obtenido)
+curl -H "Authorization: Bearer TOKEN" \
   http://localhost:3001/api/favorites
 ```
 
-¡Deberías obtener una respuesta exitosa! Si algo no funciona, revisa que MySQL esté corriendo y que las credenciales en `.env` estén correctas.
+## 📋 API Endpoints
 
-## 📋 Qué Endpoints Creé
+### Autenticación
+- `POST /api/auth/register` - Registrar nuevo usuario
+- `POST /api/auth/login` - Iniciar sesión y obtener tokens JWT
+- `POST /api/auth/refresh` - Renovar token de acceso
 
-### Autenticación (lo más importante)
-- `POST /api/auth/register` - Para que nuevos usuarios se registren
-- `POST /api/auth/login` - Para iniciar sesión y obtener tokens
-- `POST /api/auth/refresh` - Para renovar tokens cuando expiren
+### Países
+- `GET /api/countries/search?query={name}` - Buscar países
 
-### Gestión de Países
-- `GET /api/countries/search?query={nombre}` - Busca países usando una API externa
+### Favoritos
+- `POST /api/favorites` - Agregar país a favoritos
+- `GET /api/favorites` - Obtener favoritos del usuario
+- `DELETE /api/favorites/{id}` - Eliminar favorito por ID
 
-### Favoritos de Usuarios
-- `POST /api/favorites` - Agregar un país a favoritos
-- `GET /api/favorites` - Ver todos los favoritos del usuario
-- `DELETE /api/favorites/{id}` - Eliminar un favorito específico
+**Nota**: El endpoint POST `/api/favorites` requiere el campo `country_name`
 
-**Nota**: Para agregar favoritos, envía el campo `country_name` (no `name`)
+### Utilidades
+- `GET /api/test-db` - Verificar conexión a base de datos
+- `GET /api-docs` - Documentación Swagger UI
 
-### Utilidades que Agregué
-- `GET /api/test-db` - Para verificar que la conexión a MySQL funciona
-- `GET /api-docs` - Documentación automática con Swagger
+## 🔐 Autenticación JWT
 
-## 🔐 Seguridad JWT que Implementé
+La API utiliza tokens JWT para autenticación segura:
 
-Quise hacer esto bien seguro desde el principio:
+- **Access Token**: Expira en 8 horas
+- **Refresh Token**: Expira en 7 días
+- **Secrets**: Generados criptográficamente (128 caracteres)
 
-- **Tokens de acceso**: Duran 8 horas (antes eran 1 hora, lo cambié para mejor UX)
-- **Tokens de refresh**: Duran 7 días para renovar los de acceso
-- **Secrets criptográficos**: Generé secrets seguros de 128 caracteres
-- **Validación estricta**: issuer, audience, y expiración
-- **Contraseñas hasheadas**: Con bcrypt y salt rounds de 10
-
-Los endpoints protegidos necesitan este header:
+### Headers requeridos para endpoints protegidos:
 ```
-Authorization: Bearer <tu_access_token>
+Authorization: Bearer <access_token>
 ```
 
-## 🗄️ Base de Datos que Diseñé
+## 🗄️ Base de Datos
 
-Creé dos tablas principales:
+**Estructura de tablas:**
 
 **users**:
-- id, email, password (hasheada), name, created_at
+- id (PRIMARY KEY)
+- email (UNIQUE)
+- password (bcrypt hash)
+- name
+- created_at
 
 **favorites**:
-- id, user_id, country_name, flag, capital, population, region, created_at
+- id (PRIMARY KEY)
+- user_id (FOREIGN KEY → users.id)
+- country_name
+- flag, capital, population, region
+- created_at
 
-La relación es que cada usuario puede tener múltiples países favoritos, pero no puede repetir el mismo país.
+## ⚙️ Configuración
 
-## 📝 Variables de Configuración
-
-En el `.env` puedes configurar:
+Variables de entorno en `.env`:
 
 ```env
-# Puerto del servidor
+# Servidor
 PORT=3001
 
-# Secrets para JWT (ya están configurados con valores seguros)
-JWT_SECRET=tu_secret_seguro_aqui
-JWT_REFRESH_SECRET=tu_refresh_secret_aqui
-
-# Duración de tokens
+# JWT
+JWT_SECRET=<secret_seguro>
+JWT_REFRESH_SECRET=<refresh_secret_seguro>
 JWT_EXPIRES_IN=8h
 JWT_REFRESH_EXPIRES_IN=7d
 
-# Configuración de MySQL
+# Base de datos
 DB_HOST=127.0.0.1
 DB_USER=root
-DB_PASSWORD=tu_password_mysql
+DB_PASSWORD=tu_password
 DB_NAME=countries_app
 DB_PORT=3306
 
-# Orígenes permitidos para CORS
+# CORS
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 ```
 
-## 🛠️ Tecnologías que Elegí
+## 🛠️ Tecnologías
 
-- **Express.js**: Para el servidor web, es simple y poderoso
-- **MySQL2**: Base de datos relacional, perfecta para este tipo de datos
-- **JWT**: Para autenticación stateless
-- **bcryptjs**: Para hashear contraseñas de forma segura
-- **Swagger**: Documentación automática de la API
-- **CORS**: Para permitir peticiones desde el frontend
+- **Express.js** - Framework web
+- **MySQL2** - Base de datos
+- **jsonwebtoken** - JWT authentication
+- **bcryptjs** - Password hashing
+- **swagger-jsdoc/ui** - API documentation
+- **cors** - Cross-origin requests
 
-## 🔒 Medidas de Seguridad que Agregué
+## 🔒 Seguridad
 
-1. **Contraseñas hasheadas** con bcrypt (no se guardan en texto plano)
-2. **JWT con secrets seguros** generados criptográficamente
-3. **Validación de tokens** con issuer/audience para prevenir ataques
-4. **Protección contra inyección SQL** usando prepared statements
-5. **CORS configurado** para controlar qué dominios pueden acceder
-6. **Validación de entrada** en todos los endpoints
+- Passwords hasheadas con bcrypt (salt rounds: 10)
+- JWT con validación de issuer/audience
+- Protección contra SQL injection
+- CORS configurado
+- Validación de entrada en todos los endpoints
 
-## 📖 Documentación
+## 📖 Documentación API
 
-Si quieres ver todos los detalles técnicos, ve a `http://localhost:3001/api-docs` una vez que el servidor esté corriendo. Ahí está toda la documentación interactiva que genera Swagger automáticamente.
-
-## 🎯 Mi Objetivo
-
-Quise crear una API que fuera:
-- **Fácil de instalar** (con usuario de ejemplo incluido)
-- **Segura** (buenas prácticas de JWT y contraseñas)
-- **Completa** (autenticación + CRUD de favoritos)
-- **Documentada** (Swagger + este README)
-- **Escalable** (estructura limpia y modular)
-
-Si tienes alguna duda o encuentras algún problema, ¡házmelo saber! Traté de hacer todo lo más simple posible para que cualquiera pueda usar esta API sin complicaciones.
-
-¡Espero que te sea útil! 🚀
+Documentación completa disponible en: `http://localhost:3001/api-docs`
